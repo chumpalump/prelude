@@ -47,7 +47,8 @@
 
 (defun prelude-buffer-mode (buffer-or-name)
   "Retrieve the `major-mode' of BUFFER-OR-NAME."
-  (with-current-buffer buffer-or-name major-mode))
+  (with-current-buffer buffer-or-name
+    major-mode))
 
 (defun prelude-visit-term-buffer ()
   "Create or visit a terminal buffer."
@@ -79,27 +80,41 @@
       (indent-rigidly (point-min) (point-max) arg)
       (clipboard-kill-ring-save (point-min) (point-max)))))
 
-(defun prelude-insert-empty-line ()
+(defun prelude-smart-open-line-above ()
+  "Insert an empty line above the current line.
+Position the cursor at it's beginning, according to the current mode."
+  (interactive)
+  (forward-line -1)
+  (prelude-smart-open-line))
+
+(defun prelude-smart-open-line ()
   "Insert an empty line after the current line.
 Position the cursor at its beginning, according to the current mode."
   (interactive)
   (move-end-of-line nil)
-  (open-line 1)
-  (forward-line 1)
-  (indent-according-to-mode))
+  (newline-and-indent))
 
 (defun prelude-move-line-up ()
-  "Move up the current line."
+  "Move the current line up."
   (interactive)
   (transpose-lines 1)
-  (forward-line -2))
+  (forward-line -2)
+  (indent-according-to-mode))
 
 (defun prelude-move-line-down ()
-  "Move down the current line."
+  "Move the current line down."
   (interactive)
   (forward-line 1)
   (transpose-lines 1)
-  (forward-line -1))
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(defun prelude-kill-whole-line (&optional arg)
+  "A simple wrapper around command `kill-whole-line' that respects indentation.
+Passes ARG to command `kill-whole-line' when provided."
+  (interactive "P")
+  (kill-whole-line arg)
+  (back-to-indentation))
 
 (defun prelude-indent-buffer ()
   "Indent the currently visited buffer."
@@ -117,6 +132,13 @@ Position the cursor at its beginning, according to the current mode."
       (progn
         (prelude-indent-buffer)
         (message "Indented buffer.")))))
+
+(defun prelude-indent-defun ()
+  "Indent the current defun."
+  (interactive)
+  (save-excursion
+    (mark-defun)
+    (indent-region (region-beginning) (region-end))))
 
 (defun prelude-annotate-todo ()
   "Put fringe marker on TODO: lines in the curent buffer."
@@ -183,9 +205,12 @@ there's a region, all lines that region covers will be duplicated."
   (interactive)
   (let ((filename (buffer-file-name)))
     (when filename
-      (delete-file filename)
-      (message "Deleted file %s" filename)))
-  (kill-buffer))
+      (if (vc-backend filename)
+          (vc-delete-file filename)
+        (progn
+          (delete-file filename)
+          (message "Deleted file %s" filename)
+          (kill-buffer))))))
 
 (defun prelude-view-url ()
   "Open a new buffer containing the contents of URL."
@@ -194,8 +219,7 @@ there's a region, all lines that region covers will be duplicated."
          (url (read-from-minibuffer "URL: " default)))
     (switch-to-buffer (url-retrieve-synchronously url))
     (rename-buffer url t)
-    ;; TODO: switch to nxml/nxhtml mode
-    (cond ((search-forward "<?xml" nil t) (xml-mode))
+    (cond ((search-forward "<?xml" nil t) (nxml-mode))
           ((search-forward "<html" nil t) (html-mode)))))
 
 (defun prelude-untabify-buffer ()
@@ -226,9 +250,21 @@ there's a region, all lines that region covers will be duplicated."
   (byte-recompile-directory prelude-dir 0))
 
 (defun prelude-sudo-edit (&optional arg)
-  (interactive "p")
+  "Edit currently visited file as root.
+
+With a prefix ARG prompt for a file to visit.
+Will also prompt for a file to visit if current
+buffer is not visiting a file."
+  (interactive "P")
   (if (or arg (not buffer-file-name))
-      (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
+      (find-file (concat "/sudo:root@localhost:"
+                         (ido-read-file-name "Find file(as root): ")))
+    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+(defadvice ido-find-file (after find-file-sudo activate)
+  "Find file as root if necessary."
+  (unless (and buffer-file-name
+               (file-writable-p buffer-file-name))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
 (defun prelude-switch-or-start (function buffer)

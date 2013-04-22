@@ -44,12 +44,18 @@
   :group 'prelude)
 
 (defcustom prelude-guru t
-  "Non-nil values enable guru-mode"
+  "Non-nil values enable guru-mode."
   :type 'boolean
   :group 'prelude)
 
 (defcustom prelude-whitespace t
   "Non-nil values enable Prelude's whitespace visualization."
+  :type 'boolean
+  :group 'prelude)
+
+(defcustom prelude-clean-whitespace-on-save t
+  "Cleanup whitespace from file before it's saved.
+Will only occur if prelude-whitespace is also enabled."
   :type 'boolean
   :group 'prelude)
 
@@ -173,7 +179,7 @@
 
 ;; note - this should be after volatile-highlights is required
 ;; add the ability to copy and cut the current line, without marking it
-(defadvice kill-ring-save (before slick-copy activate compile)
+(defadvice kill-ring-save (before smart-copy activate compile)
   "When called interactively with no active region, copy a single line instead."
   (interactive
    (if mark-active (list (region-beginning) (region-end))
@@ -181,7 +187,7 @@
      (list (line-beginning-position)
            (line-beginning-position 2)))))
 
-(defadvice kill-region (before slick-cut activate compile)
+(defadvice kill-region (before smart-cut activate compile)
   "When called interactively with no active region, kill a single line instead."
   (interactive
    (if mark-active (list (region-beginning) (region-end))
@@ -218,10 +224,14 @@
   (when (and prelude-flyspell (executable-find ispell-program-name))
     (flyspell-mode +1)))
 
+(defun prelude-cleanup-maybe ()
+  (when prelude-clean-whitespace-on-save
+    (whitespace-cleanup)))
+
 (defun prelude-enable-whitespace ()
   (when prelude-whitespace
     ;; keep the whitespace decent all the time (in this buffer)
-    (add-hook 'before-save-hook 'whitespace-cleanup nil t)
+    (add-hook 'before-save-hook 'prelude-cleanup-maybe nil t)
     (whitespace-mode +1)))
 
 (add-hook 'text-mode-hook 'prelude-enable-flyspell)
@@ -283,6 +293,9 @@
 
 ;; dired - reuse current buffer by pressing 'a'
 (put 'dired-find-alternate-file 'disabled nil)
+
+;; enable some really cool extensions like C-x C-j(dired-jump)
+(require 'dired-x)
 
 ;; ediff - don't start another frame
 (require 'ediff)

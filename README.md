@@ -8,7 +8,9 @@ library to the mix. The final product offers an easy to use Emacs
 configuration for Emacs newcomers and lots of additional power for
 Emacs power users.
 
-Prelude is compatible **ONLY with GNU Emacs 24.x**.
+Prelude is compatible **ONLY with GNU Emacs 24.x**. In general you're
+advised to always run Prelude with the latest Emacs - currently
+**24.3**.
 
 ## Fast Forward
 
@@ -135,7 +137,11 @@ By default most of the modules that ship with Prelude are not loaded.
 (require 'prelude-xml)
 ```
 
-You'll need to adjust your `prelude-modules.el` file once the installation is done.
+You'll need to adjust your `prelude-modules.el` file once the
+installation is done. If you are doing a manual install then you first
+need to copy the `prelude-modules.el` available in the sample
+directory to the root of `path/to/prelude/installation` and then
+adjust that one.
 
 After you've uncommented a module you should either restart Emacs or evaluate the module
 `require` expression with <kbd>C-x C-e</kbd>.
@@ -187,17 +193,17 @@ extensions to keybindings.
 Keybinding         | Description
 -------------------|------------------------------------------------------------
 <kbd>C-M-h</kbd>   | Kill the previous word(`backward-kill-word`). (as in Bash/Zsh)
-<kbd>C-x \</kbd>   | `align-regexp`
+<kbd>C-x \\</kbd>   | `align-regexp`
 <kbd>C-+</kbd>     | Increase font size(`text-scale-increase`).
 <kbd>C--</kbd>     | Decrease font size(`text-scale-decrease`).
 <kbd>C-x O</kbd>   | Go back to previous window (the inverse of `other-window` (`C-x o`)).
 <kbd>C-x ^</kbd>   | Join two lines into one(`join-line`).
-<kbd>C-x p</kbd>   | Start `proced` (manage processes form Emacs, works only in Linux).
+<kbd>C-x p</kbd>   | Start `proced` (manage processes from Emacs; works only in Linux).
 <kbd>C-x m</kbd>   | Start `eshell`.
 <kbd>C-x M-m</kbd> | Start your default shell.
 <kbd>C-x C-m</kbd> | Alias for `M-x`.
 <kbd>C-h A</kbd>   | Run `apropos` (search in all Emacs symbols).
-<kbd>M-\</kbd>     | Run `hippie-expand` (a replacement for the default `dabbrev-expand`).
+<kbd>M-\\</kbd>     | Run `hippie-expand` (a replacement for the default `dabbrev-expand`).
 <kbd>C-x C-b</kbd> | Open `ibuffer` (a replacement for the default `buffer-list`).
 <kbd>F12</kbd>     | Toggle the Emacs menu bar.
 <kbd>C-x g</kbd>   | Open Magit's status buffer.
@@ -209,12 +215,13 @@ Keybinding         | Description
 -------------------|------------------------------------------------------------
 <kbd>C-c o</kbd>   | Open the currently visited file with an external program.
 <kbd>C-c g</kbd>   | Search in Google for the thing under point (or an interactive query).
+<kbd>C-S-RET</kbd> | Insert an empty line above the current line and indent it properly
 <kbd>S-RET</kbd>   | Insert an empty line and indent it properly (as in most IDEs).
 <kbd>C-S-up</kbd>  | Move the current line up.
 <kbd>C-S-down</kbd> | Move the current line down.
 <kbd>C-c n</kbd> | Fix indentation in buffer and strip whitespace.
-<kbd>C-c f</kbd> | Open recently visitted file.
-<kbd>C-M-\</kbd> | Indent region (if selected) or the entire buffer.
+<kbd>C-c f</kbd> | Open recently visited file.
+<kbd>C-M-\\</kbd> | Indent region (if selected) or the entire buffer.
 <kbd>C-c u</kbd> | Open URL in your default browser.
 <kbd>C-c e</kbd> | Eval a bit of Emacs Lisp code and replace it with its result.
 <kbd>C-c s</kbd> | Swap two active windows.
@@ -226,7 +233,7 @@ Keybinding         | Description
 
 #### Projectile
 
-Here's a list of functionality provided by [Projectile](https://github.com/bbatsov/prelude):
+Here's a list of functionality provided by [Projectile](https://github.com/bbatsov/projectile):
 
 Keybinding         | Description
 -------------------|------------------------------------------------------------
@@ -311,6 +318,19 @@ personal config with the following bit of code:
 ```lisp
 (setq prelude-whitespace nil)
 ```
+
+If you like `whitespace-mode` but prefer it to not automatically
+cleanup your file on save, you can disable that behavior by setting
+prelude-clean-whitespace-on-save to nil in your config file with:
+
+```lisp
+(setq prelude-clean-whitespace-on-save nil)
+```
+
+The prelude-clean-whitespace-on-save setting can also be set on a
+per-file or directory basis by using a file variable or a
+.dir-locals.el file.
+
 
 #### Disable flyspell-mode
 

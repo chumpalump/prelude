@@ -1,3 +1,6 @@
+(require 'package)
+(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+
 (scroll-bar-mode -1)
 ;;(ido-mode -1)
 ;;(require 'helm-config)
@@ -41,6 +44,17 @@
 ;; (setq find-ls-option '("-print0 | xargs -0 ls -ld" . "-ld"))
 ;; (setq find-ls-option '("-ls | grep -v -e '\.git/' -e '\.hg/' -e '\.pyc$' | sort -k 11" . "-dilsb"))
 (setq find-ls-option '("-ls | grep -v -e '\.git/' -e '\.hg/' -e '\.pyc$' | sort -k 11" . "-dilsb"))
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((R . t)
+   (sh . t)
+   (python . t)
+   (emacs-lisp . t)
+   ))
+
+(setq org-confirm-shell-link-function `y-or-n-p)
+(setq org-confirm-elisp-link-function `y-or-n-p)
 
 (defun no-split-window ()
   (interactive)

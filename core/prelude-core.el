@@ -33,6 +33,7 @@
 ;;; Code:
 
 (require 'thingatpt)
+(require 'dash)
 
 (defun prelude-open-with ()
   "Open visited file in external program."
@@ -53,12 +54,9 @@
 (defun prelude-visit-term-buffer ()
   "Create or visit a terminal buffer."
   (interactive)
-  (if (not (get-buffer "*ansi-term*"))
-      (progn
-        (split-window-sensibly (selected-window))
-        (other-window 1)
-        (ansi-term (getenv "SHELL")))
-    (switch-to-buffer-other-window "*ansi-term*")))
+  (prelude-start-or-switch-to (lambda ()
+                                (ansi-term (getenv "SHELL")))
+                              "*ansi-term*"))
 
 (defun prelude-google ()
   "Googles a query or region if any."
@@ -263,17 +261,21 @@ buffer is not visiting a file."
 
 (defadvice ido-find-file (after find-file-sudo activate)
   "Find file as root if necessary."
-  (unless (and buffer-file-name
-               (file-writable-p buffer-file-name))
+  (unless (or (equal major-mode 'dired-mode)
+              (and (buffer-file-name)
+                   (file-writable-p buffer-file-name)))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
-(defun prelude-switch-or-start (function buffer)
-  "If BUFFER is current, bury it, otherwise invoke FUNCTION."
-  (if (equal (buffer-name (current-buffer)) buffer)
-      (bury-buffer)
-    (if (get-buffer buffer)
-        (switch-to-buffer buffer)
-      (funcall function))))
+(defun prelude-start-or-switch-to (function buffer-name)
+  "Invoke FUNCTION if there is no buffer with BUFFER-NAME.
+Otherwise switch to the buffer named BUFFER-NAME.  Don't clobber
+the current buffer."
+  (if (not (get-buffer buffer-name))
+      (progn
+        (split-window-sensibly (selected-window))
+        (other-window 1)
+        (funcall function))
+    (switch-to-buffer-other-window buffer-name)))
 
 (defun prelude-insert-date ()
   "Insert a timestamp according to locale's date and time format."
@@ -290,7 +292,9 @@ buffer is not visiting a file."
 (defun prelude-recentf-ido-find-file ()
   "Find a recent file using ido."
   (interactive)
-  (let ((file (ido-completing-read "Choose recent file: " recentf-list nil t)))
+  (let ((file (ido-completing-read "Choose recent file: "
+                                   (-map 'abbreviate-file-name recentf-list)
+                                   nil t)))
     (when file
       (find-file file))))
 
@@ -310,6 +314,12 @@ buffer is not visiting a file."
       (set-window-start w1 s2)
       (set-window-start w2 s1)))
   (other-window 1))
+
+(defun prelude-switch-to-previous-buffer ()
+  "Switch to previously open buffer.
+Repeated invocations toggle between the two most recently open buffers."
+  (interactive)
+  (switch-to-buffer (other-buffer (current-buffer) 1)))
 
 (defun prelude-kill-other-buffers ()
   "Kill all buffers but the current one.

@@ -148,7 +148,8 @@ Will only occur if prelude-whitespace is also enabled."
   "Save the current buffer if `prelude-auto-save' is not nil."
   (when (and prelude-auto-save
              buffer-file-name
-             (buffer-modified-p (current-buffer)))
+             (buffer-modified-p (current-buffer))
+             (file-writable-p buffer-file-name))
     (save-buffer)))
 
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -262,6 +263,9 @@ Will only occur if prelude-whitespace is also enabled."
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
+;; enable erase-buffer command
+(put 'erase-buffer 'disabled nil)
+
 (require 'expand-region)
 
 ;; bookmarks
@@ -313,6 +317,14 @@ Will only occur if prelude-whitespace is also enabled."
 
 ;; dired - reuse current buffer by pressing 'a'
 (put 'dired-find-alternate-file 'disabled nil)
+
+;; always delete and copy recursively
+(setq dired-recursive-deletes 'always)
+(setq dired-recursive-copies 'always)
+
+;; if there is a dired buffer displayed in the next window, use its
+;; current subdir, instead of the current subdir of this dired buffer
+(setq dired-dwim-target t)
 
 ;; enable some really cool extensions like C-x C-j(dired-jump)
 (require 'dired-x)
@@ -368,6 +380,9 @@ indent yanked text (with prefix arg don't indent)."
 ;; make a shell script executable automatically on save
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
+
+;; .zsh file is shell script too
+(add-to-list 'auto-mode-alist '("\\.zsh\\'" . shell-script-mode))
 
 ;; whitespace-mode config
 (require 'whitespace)

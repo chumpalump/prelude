@@ -12,7 +12,6 @@
 (add-to-list 'load-path "/usr/lib/erlang/lib/tools-2.6.7/emacs/")
 ;;(add-to-list 'load-path "/var/lib/zotonic/zotonic/priv/emacs")
 
-(load-theme 'subatomic)
 (setq prelude-guru nil)
 (setq prelude-clean-whitespace-on-save nil)
 
@@ -22,6 +21,7 @@
 
 (require 'zencoding-mode)
 (add-hook 'sgml-mode-hook 'zencoding-mode)
+(add-hook 'sgml-mode-hook '(lambda () (whitespace-mode -1)))
 
 (setq compilation-scroll-output t)
 
@@ -190,13 +190,25 @@
 (global-set-key (kbd "<XF86Eject>")     'jump-to-register)
 (global-set-key (kbd "S-<XF86Eject>")   'window-configuration-to-register)
 
+(if (display-graphic-p)
+    (progn
+      (message "hdd graphics mode")
+      ;;(load-theme 'subatomic)
+      ;;(load-theme 'birds-of-paradise-plus)
+      (load-theme 'grandshell 't)
+      )
+  (progn
+    (message "hdd text mode")
+    )
+  )
+
 (modify-all-frames-parameters
  '(
    ;; (background-color . "#000000")
-   ;; (background-color . "#090702")
+   (background-color . "#090702")
    ;; (background-color . "#110904")
    ;; (background-color . "#150505")
-   (alpha . 95)
+   (alpha . 80)
    ;; (font . "Droid Sans Mono-9")
    ;; (font . "LMMono12-12")
    ;; (font . "Inconsolata-11")
@@ -206,7 +218,7 @@
    ;; (font . "kates")
    ;; (font . "lime")
    ;;(font . "smoothansi")
-   (font . "-unknown-Ubuntu Mono-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1")
+   (font . "-unknown-Ubuntu Mono-normal-normal-normal-*-12-*-*-*-m-0-iso10646-1")
    (cursor-color . "red")
    (mouse-color . "red")
    (menu-bar-lines . 0)

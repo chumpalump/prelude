@@ -1,10 +1,13 @@
 (require 'package)
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
 
+(remove-hook 'prog-mode-hook 'flycheck-mode)
+(global-flycheck-mode nil)
+
 (scroll-bar-mode -1)
 ;;(ido-mode -1)
 ;;(require 'helm-config)
-(load-library "ess")
+(require 'ess-site)
 (setq ess-eval-visibly-p nil) ;otherwise C-c C-r (eval region) takes forever
 (setq ess-ask-for-ess-directory nil) ;otherwise you are prompted each time you start an interactive R session
 
@@ -19,9 +22,38 @@
 (setq default-truncate-lines t)
 (setq mouse-yank-at-point t)
 
+(defun sql-get-login (&rest what)
+  (setq sql-user     "dhjr"
+        sql-password ""
+        sql-server   ""
+        sql-database "c61a"))
+
 (require 'zencoding-mode)
 (add-hook 'sgml-mode-hook 'zencoding-mode)
 (add-hook 'sgml-mode-hook '(lambda () (whitespace-mode -1)))
+(setq python-mode-hook ())
+(add-hook 'python-mode-hook
+          '(lambda ()
+             (progn
+               (whitespace-mode -1)
+               (flyspell-mode -1)
+               (flycheck-mode -1)
+               )))
+;;(setq php-mode-hook ())
+(add-hook 'php-mode-hook
+          '(lambda ()
+             (progn
+              (whitespace-mode -1)
+              (flyspell-mode -1)
+              )))
+;;(setq lisp-mode-hook ())
+(add-hook 'lisp-mode-hook
+          '(lambda ()
+             (progn
+              (whitespace-mode -1)
+              (flyspell-mode -1)
+              (paredit-mode -1)
+              )))
 
 (setq compilation-scroll-output t)
 
@@ -86,7 +118,8 @@
 (add-hook 'dired-mode-hook
           (lambda ()
             ;; Set dired-x buffer-local variables here.  For example:
-            ;; (dired-omit-mode 1)
+            (dired-omit-mode 1)
+            (local-set-key (kbd "M-o") 'dired-omit-mode)
             ))
 
 (require 'eshell)
@@ -152,6 +185,7 @@
 (add-to-list 'auto-mode-alist '("Vagrantfile"  . ruby-mode))
 (add-to-list 'auto-mode-alist '("^hosts-"  . conf-mode))
 (add-to-list 'auto-mode-alist '("\\.tpl$"  . zotonic-tpl-mode))
+(add-to-list 'auto-mode-alist '("Dockerfile"  . conf-mode))
 
 (add-hook 'text-mode-hook (lambda () (auto-fill-mode -1)))
 (add-hook 'markdown-mode-hook (lambda () (auto-fill-mode -1)))
@@ -195,7 +229,9 @@
       (message "hdd graphics mode")
       ;;(load-theme 'subatomic)
       ;;(load-theme 'birds-of-paradise-plus)
-      (load-theme 'grandshell 't)
+      ;;(load-theme 'grandshell 't)
+      ;;(load-theme 'solarized-dark 't)
+      (load-theme 'monokai 't)
       )
   (progn
     (message "hdd text mode")
@@ -205,10 +241,10 @@
 (modify-all-frames-parameters
  '(
    ;; (background-color . "#000000")
-   (background-color . "#090702")
+   ; (background-color . "#090702")
    ;; (background-color . "#110904")
    ;; (background-color . "#150505")
-   (alpha . 80)
+   (alpha . 90)
    ;; (font . "Droid Sans Mono-9")
    ;; (font . "LMMono12-12")
    ;; (font . "Inconsolata-11")
@@ -218,7 +254,7 @@
    ;; (font . "kates")
    ;; (font . "lime")
    ;;(font . "smoothansi")
-   (font . "-unknown-Ubuntu Mono-normal-normal-normal-*-12-*-*-*-m-0-iso10646-1")
+   (font . "-unknown-Ubuntu Mono-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1")
    (cursor-color . "red")
    (mouse-color . "red")
    (menu-bar-lines . 0)
@@ -231,5 +267,6 @@
 ;;  )
 (global-set-key [f11]    'make-frame)
 (global-set-key [f12]    'other-frame)
+(global-set-key (kbd "<mouse-3>") 'ffap-at-mouse)
 
 ;; (bookmark-bmenu-list)
